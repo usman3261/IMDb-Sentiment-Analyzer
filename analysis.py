@@ -2,6 +2,8 @@ import pandas as pd
 from nltk.sentiment import SentimentIntensityAnalyzer
 from transformers import pipeline
 from tqdm import tqdm
+import matplotlib.pyplot as plt
+import seaborn as sns
 
 vader = SentimentIntensityAnalyzer()
 
@@ -58,3 +60,32 @@ def run_sentiment_analysis(df):
     results_df = results_df.reset_index().rename(columns={"index": "Id"})
     merged = pd.merge(df, results_df, on="Id", how="left")
     return merged
+
+def visualize_sentiment(df):
+    sns.set(style="whitegrid")
+
+    plt.figure(figsize=(8, 5))
+    sns.barplot(data=df, x='Sentiment', y='vader_compound')
+    plt.title("VADER Compound Score by IMDb Sentiment")
+    plt.tight_layout()
+    plt.show()
+
+    fig, axs = plt.subplots(1, 3, figsize=(15, 4))
+    sns.barplot(data=df, x='Sentiment', y='vader_pos', ax=axs[0])
+    sns.barplot(data=df, x='Sentiment', y='vader_neu', ax=axs[1])
+    sns.barplot(data=df, x='Sentiment', y='vader_neg', ax=axs[2])
+    axs[0].set_title("VADER Positive")
+    axs[1].set_title("VADER Neutral")
+    axs[2].set_title("VADER Negative")
+    plt.tight_layout()
+    plt.show()
+
+    fig, axs = plt.subplots(1, 3, figsize=(15, 4))
+    sns.barplot(data=df, x='Sentiment', y='roberta_pos', ax=axs[0])
+    sns.barplot(data=df, x='Sentiment', y='roberta_neu', ax=axs[1])
+    sns.barplot(data=df, x='Sentiment', y='roberta_neg', ax=axs[2])
+    axs[0].set_title("DistilBERT Positive")
+    axs[1].set_title("DistilBERT Neutral")
+    axs[2].set_title("DistilBERT Negative")
+    plt.tight_layout()
+    plt.show()
