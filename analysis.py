@@ -1,16 +1,20 @@
 import pandas as pd
-from nltk.sentiment import SentimentIntensityAnalyzer
-from transformers import pipeline
-from tqdm import tqdm
 import matplotlib.pyplot as plt
 import seaborn as sns
+from tqdm import tqdm
+import torch
+from nltk.sentiment import SentimentIntensityAnalyzer
+from transformers import pipeline
 
 vader = SentimentIntensityAnalyzer()
+
+device = 0 if torch.cuda.is_available() else -1
 
 roberta_pipeline = pipeline(
     "sentiment-analysis",
     model="distilbert-base-uncased-finetuned-sst-2-english",
     tokenizer="distilbert-base-uncased-finetuned-sst-2-english",
+    device=device,
     truncation=True,
     max_length=512
 )
@@ -89,3 +93,15 @@ def visualize_sentiment(df):
     axs[2].set_title("DistilBERT Negative")
     plt.tight_layout()
     plt.show()
+
+if __name__ == "__main__":
+    csv_path = "./IMDb-Sentiment-Analyzer/IMDB Dataset.csv"
+
+    df = load_data(csv_path)
+    df_with_sentiment = run_sentiment_analysis(df)
+
+    print(df_with_sentiment.head())
+
+    df_with_sentiment.to_csv("./IMDb-Sentiment-Analyzer/IMDB Dataset.csv", index=False)
+
+    visualize_sentiment(df_with_sentiment)
