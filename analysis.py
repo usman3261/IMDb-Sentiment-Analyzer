@@ -1,6 +1,7 @@
 import pandas as pd
 from nltk.sentiment import SentimentIntensityAnalyzer
 from transformers import pipeline
+from tqdm import tqdm
 
 vader = SentimentIntensityAnalyzer()
 
@@ -40,3 +41,20 @@ def analyze_roberta(text):
             'roberta_neu': 0.0,
             'roberta_pos': 0.0
         }
+
+def run_sentiment_analysis(df):
+    results = {}
+    for _, row in tqdm(df.iterrows(), total=len(df)):
+        try:
+            text = row["Text"]
+            myid = row["Id"]
+            vader_scores = analyze_vader(text)
+            roberta_scores = analyze_roberta(text)
+            combined = {**vader_scores, **roberta_scores}
+            results[myid] = combined
+        except:
+            pass
+    results_df = pd.DataFrame(results).T
+    results_df = results_df.reset_index().rename(columns={"index": "Id"})
+    merged = pd.merge(df, results_df, on="Id", how="left")
+    return merged
